@@ -81,6 +81,10 @@ class BranchController extends Controller
             'stock_quantity' => $request->stock_quantity
         ]);
 
-        return redirect()->route('branches.show', $branch)->with('success', 'Inventory updated successfully for ' . $product->name);
+        // Recalculate global stock as sum of all branch inventories
+        $globalStock = BranchInventory::where('product_id', $product->id)->sum('stock_quantity');
+        $product->update(['stock_quantity' => $globalStock]);
+
+        return redirect()->route('branches.show', $branch)->with('success', 'Inventory updated for ' . $product->name . '. Global stock synced to ' . $globalStock . '.');
     }
 }
